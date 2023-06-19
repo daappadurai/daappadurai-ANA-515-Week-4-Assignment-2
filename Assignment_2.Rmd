@@ -1,0 +1,328 @@
+---
+title: "Assignment 2 ANA 515"
+author: "Daniel Appadurai"
+date: "2023-06-11"
+output: word_document
+ 
+---
+# Heavy Drinking Among Adults In the US Aged 18 and Above
+
+
+```{r dependencies, echo=TRUE}
+#importing dependencies
+library(tidyverse)
+library(dplyr)
+library(knitr)
+library(rmarkdown)
+library(officer)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r importData, echo=TRUE}
+#importing csv file and creating a dataframe named data. The dataframe is created with the read.csv() function from the base R package. Columns 1 to 6 of 34 and the top 5 rows of 'data' dataset are displayed.
+data<-read.csv("U.S._Chronic_Disease_Indicators__CDI_.csv")
+subset_data1<-data[1:5,1:6]
+kable(subset_data1)
+```
+```{r data display2, echo=TRUE}
+#Columns 7 to 12 of 34 and the top 5 rows of 'data' dataset are displayed.
+subset_data2<-data[1:5,7:12]
+kable(subset_data2)
+
+```
+
+```{r datadisplay3, echo=TRUE}
+#Columns 13 to 16 of 34 and the top 5 rows of 'data' dataset are displayed.
+subset_data3<-data[1:5,13:16]
+kable(subset_data3)
+
+```
+
+
+```{r datadisplay4, echo=TRUE}
+#Columns 17 to 20 of 34 and the top 5 rows of 'data' dataset are displayed.
+subset_data4<-data[1:5,17:20]
+kable(subset_data4)
+
+```
+
+```{r datadisplay5, echo=TRUE}
+#Columns 21 to 24 of 34 and the top 5 rows of 'data' dataset are displayed.
+subset_data5<-data[1:5,21:24]
+kable(subset_data5)
+
+```
+
+```{r datadisplay6, echo=TRUE}
+#Columns 25 to 30 of 34 and the top 5 rows of 'data' dataset are displayed.
+subset_data6<-data[1:5,25:30]
+kable(subset_data6)
+
+```
+
+```{r datadisplay7, echo=TRUE}
+#Columns 31 to 34 of 34 and the top 5 rows of 'data' dataset are displayed.
+subset_data7<-data[1:5,31:34]
+kable(subset_data7)
+
+```
+
+```{r inline code, echo=TRUE}
+
+```
+
+# SECTION 1 AND 2:
+
+## Chronic Disease Indicators Dataset:
+
+The chronic disease indicators data set is a comprehensive data set collected on an annual basis since 2001 by the CDC's Division of Population Health across all 50 US states. The data set is in the .csv file format and read into a dataframe using the read.csv() function from the base R package. The dataset has a total of `r ncol(data)` columns and  `r nrow(data)` rows  as of 2021 and contains 124 indicators for a total of `r length(unique(data$Topic))` chronic diseases.
+
+## Heavy Alcohol Consumption Among Adults Aged 18 And Above:
+
+One of the chronic disease data collected is on heavy alcohol consumption among adults across 50 US states. This data analysis is done on heavy alcohol consumption for the year 2021. The analysis looks into heavy alcohol consumption among men and women and also among the various racial/ethnic groups. 
+
+# SECTION 3: DATA CLEANING
+
+```{r colnames, echo=TRUE}
+#Inspecting columns
+colnames(data)
+```
+
+```{r 2021Data, echo=TRUE}
+# filtering data for the most recent year, 2021, same number of columns as the previous dataframe, but trucated to the first six for organized and clean output but the appropriate application of the code will be displayed in the output
+recent_data<-filter(data,YearEnd==2021)
+subset_recent_data<-recent_data[1:5, 1:6]
+kable(subset_recent_data)
+```
+
+```{r topicselection, echo=TRUE}
+#inspecting the chronic disease topics
+unique(recent_data$Topic)
+
+```
+
+```{r AlcoholTopic, echo=TRUE}
+# Filtering only for chronic disease category, alcohol,same number of columns as the previous dataframe, but trucated to the first six for organized and clean output but the appropriate application of the code will be displayed in the output
+alcohol<-filter(recent_data,Topic=="Alcohol")
+subset_alcohol<-alcohol[1:5,1:6]
+kable(subset_alcohol)
+
+```
+
+```{r missing columns, echo=TRUE}
+#inspecting null columns and compling a list of all columns. The result of null columns will be TRUE and non-null columns will be FALSE
+results<- list()
+for (col_name in colnames(alcohol)) {
+  analysis_results<- all(is.na(alcohol[[col_name]]))
+  results[[col_name]]<- analysis_results
+}
+```
+
+```{r missing column results, echo=TRUE}
+# Making a dataframe from the column list and transforming the shape of the dataframe for better view
+df<-data.frame(results)
+df2<-t(df)
+df3<-as.data.frame(df2)
+```
+
+```{r df3, echo=FALSE}
+df3
+```
+
+```{r cleaning df3, echo=TRUE}
+#Naming the row index as column name
+library(dplyr)
+df3<-rownames_to_column(df3, var="Column_Name")
+df3
+```
+
+```{r echo=TRUE}
+# filtering out only non-null columns
+
+df4<-filter(df3, V1=="FALSE")
+df4
+```
+
+```{r column list to be deleted, echo=TRUE}
+# creating a list of selected columns
+columns_list<-df4$Column_Name
+columns_list
+```
+
+```{r Alcohol column list deletion, echo=TRUE}
+#making a new dataframe with the selected non-null columns
+alcohol_new<-subset(alcohol, select = columns_list)
+subset_alcohol_new<-alcohol_new[1:5, 1:6]
+kable(subset_alcohol_new)
+```
+
+```{r diplaying non-null columns in alcohol_new, echo=TRUE}
+colnames(alcohol_new)
+```
+
+```{r questions, echo=TRUE}
+# What are the unique survey questions in this dataframe
+unique(alcohol_new$Question)
+```
+
+```{r alcohol consumption, echo=TRUE}
+# choosing only alcohol consumption related questions, total entries, 4130
+alcohol_consumption<-subset(alcohol_new, Question %in%  c("Heavy drinking among adults aged >= 18 years","Heavy drinking among women aged 18-44 years","Binge drinking prevalence among adults aged >= 18 years","Binge drinking intensity among adults aged >= 18 years who binge drink","Binge drinking frequency among adults aged >= 18 years who binge drink","Binge drinking prevalence among women aged 18-44 years"))
+
+unique_questions<-unique(alcohol_consumption$Question)
+unique_questions
+```
+
+```{r dealing with missing values, echo=TRUE}
+# checking for missing values in rows and found 1,393 missing values
+missing_rows<-alcohol_consumption[apply(is.na(alcohol_consumption), 1, any), ]
+nrow(missing_rows)
+```
+
+```{r removing missing rows, echo=TRUE}
+# selecting rows without missing values, number of rows total, 2,737
+alcohol_consumption_new<-alcohol_consumption[complete.cases(alcohol_consumption), ]
+
+nrow(alcohol_consumption_new)
+
+```
+
+```{r further removing unwanted columns, echo=TRUE}
+# Further inpspecting for relevant rows
+columns_list
+```
+
+```{r removing unwanted columns cont, echo=TRUE}
+# selecting only relevant rows
+alcohol_consumption_mod<-subset(alcohol_consumption_new, select=c("LocationDesc","Question","DataValueUnit","DataValueType","DataValueAlt","StratificationCategory1","Stratification1"))
+colnames(alcohol_consumption_mod)
+```
+
+# SECTION 4: 
+
+## CHARACTERISTICS OF THE DATA:
+
+
+```{r, data description, echo=TRUE}
+# Description of columns in the final data set.
+data_desc<-data.frame(Column_Name = c("LocationDesc","Question","DataValueUnit","DataValueType","DataValueAlt","StratificationCategory1","Stratification1"),
+Description = c("US State Name", "Alcohol survey question", "Percentage","Prevalence/Age-adjusted Prevalence", "Numerical value", "Gender/Race", "Male, Female, Black, Hispanic, Non-Hispanic, White")
+                      )
+column_desc<-kable(data_desc)
+column_desc
+
+```
+
+The initial alcohol dataset had `r nrow(alcohol)` rows and `r ncol(alcohol)` columns. After dropping null and irrelevant columns and dropping rows with missing entries, the cleaned dataset reduced to  `r ncol(alcohol_consumption_mod)` columns and `r nrow(alcohol_consumption_mod)` rows. The names of the columns are listed in the output above. 
+
+# SECTION 5: SUMMARY STATISTICS ON HEAVY DRINKING ADULTS BASED ON GENDER AND RACE/ETHNICITY
+
+
+```{r heavy drinking aged 18 and above, echo=TRUE}
+# The final adult alcohol consumption dataset
+hdag_18<-alcohol_consumption_mod %>% filter(Question=="Heavy drinking among adults aged >= 18 years")
+unique(hdag_18$Question)
+```
+
+```{r hdag_18Gender DataValueType, echo=TRUE}
+# what are the data value types
+unique(hdag_18$DataValueType)
+```
+
+```{r hdag_18Gender, echo=TRUE}
+# filtering data set that gives adult male and female alcohol consumption data
+hdag_18Gender<-hdag_18 %>% filter(StratificationCategory1=="Gender")
+unique(hdag_18Gender$StratificationCategory1)
+```
+
+```{r renaming column, echo=TRUE}
+# renaming Stratification1 as Gender
+
+names(hdag_18Gender)[names(hdag_18Gender) == 'Stratification1'] <- 'Gender'
+
+hdag_18Gender$Gender[1:5]
+
+
+```
+
+```{r hdag_18GenderSummary, echo=TRUE}
+# segregating Crude Prevalence and Age Adjusted Prevalence
+filt1<-hdag_18Gender %>% filter(DataValueType=="Crude Prevalence")
+filt2<-hdag_18Gender %>% filter(DataValueType == "Age-adjusted Prevalence")
+```
+
+```{r summary stats Prevalence gender, echo=TRUE}
+# assinging summary statistics to a new variable summrz_g for prevalence of heavy drinking among adult males and females aged 18 and above 
+summrz_g<-filt1 %>% group_by(Gender) %>% summarize(Mean_Prevalence=mean(DataValueAlt), Min_Prevalence=min(DataValueAlt),Max_Prevalence=max(DataValueAlt), .groups= "keep")
+kable(summrz_g)
+
+```
+
+```{r summary stats Age adjusted Prevalence gender, echo=TRUE}
+# assingingsummary statistics to a new variable summrz_g2, for age adjusted prevalence among adult males and females aged 18 and above 
+summrz_g2<-filt2 %>% group_by(Gender) %>% summarize(Mean_Prevalence=mean(DataValueAlt), Min_Prevalence=min(DataValueAlt),Max_Prevelance=max(DataValueAlt), .groups= "keep")
+kable(summrz_g2)
+
+```
+
+```{r hdag_18Race, echo=TRUE}
+# filtering alcohol consumption among different Race/Ethinicty
+hdag_18Race<-hdag_18 %>% filter(StratificationCategory1=="Race/Ethnicity")
+unique(hdag_18Race$StratificationCategory1)
+```
+
+```{r Rename column, echo=TRUE}
+# Rename Stratification 1 as Race/Ethnicity
+
+names(hdag_18Race)[names(hdag_18Race) == 'Stratification1'] <- 'Race_Ethnicity'
+
+hdag_18Race$Race_Ethnicity[1:5]
+
+```
+
+```{r DataValueType, echo=TRUE}
+# checking for DataValueType
+unique(hdag_18Race$DataValueType)
+
+```
+
+```{r hdag_18RaceSummary, echo=TRUE}
+# Segregating cure prevalence from age-adjusted prevalence
+filt3<-hdag_18Race %>% filter(DataValueType=="Crude Prevalence")
+filt4<-hdag_18Race %>% filter(DataValueType == "Age-adjusted Prevalence")
+
+```
+
+```{r summary stats Prevalence Race, echo=TRUE}
+# assigning summary statistics to a new variable summrz_g3 for prevalence of heavy alcohol consumption among different race/ethnicity aged 18 and above 
+summrz_g3<-filt3 %>% group_by(Race_Ethnicity) %>% summarize(Mean_Prevalence=mean(DataValueAlt), Min_Prevalence=min(DataValueAlt),Max_Prevalence=max(DataValueAlt), .groups= "keep")
+kable(summrz_g3)
+
+```
+
+```{r summary stats age adjusted Prevelance Race, echo=TRUE}
+# assigning summary statistics to a new variable summrz_g4, for age-adjusted prevalence of heavy drinking among different race/ethinicity aged 18 and above
+summrz_g4<-filt4 %>% group_by(Race_Ethnicity) %>% summarize(Mean_Prevalence=mean(DataValueAlt), Min_Prevelence=min(DataValueAlt),Max_Prevelance=max(DataValueAlt), .groups= "keep")
+kable(summrz_g4)
+```
+
+```{r inline code conclusion, echo=TRUE}
+
+```
+
+## CONCLUSION:
+
+From the summary statistics obtained from summrz_g, summrz_g2, summrz_g3 and summrz_g4 (variables assigned for summary statistics for crude prevalence and age-adjusted prevalence based on gender or race/ethnicity) the following results are obtained. The mean crude prevalence rate of heavy drinking among men (`r summrz_g[2,2]`%) is higher than the mean crude prevalence rate among women (`r summrz_g[1,2]`%). Even after adjusting for age, the mean prevalence rate for men (`r summrz_g2[2,2]`%) is still higher than women (`r summrz_g2[1,2]`%).
+
+The mean crude prevalence rate of heavy drinking among multiracial, Hispanic(`r summrz_g3[3,2]`%) is the highest followed by White, non-Hispanic(`r summrz_g3[5,2]`%). Adjusting for age, did not significantly change the outcome for heavy drinking rate.
+
+Note: The above conclusions are highly contingent on the available data and is subject to change anytime with new available data. This is solely meant for academic exercise purpose only and in no way represents the personal view of the author nor it is intended to be discriminatory or maliciously targeted towards any particular race/ethnicity or gender.
+
+
+
+
+
